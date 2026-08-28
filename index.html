@@ -274,6 +274,7 @@
 
     <!-- 4. 가변 파일명이 적용된 다운로드 버튼 -->
     <button class="btn" id="downloadBtn" disabled>다운로드 대기 중</button>
+    <button class="btn" id="shareBtn" style="background-color: var(--primary-color); display:none;">공유하기</button>
   </div>
 </div>
 
@@ -10395,6 +10396,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
   const chunkChips = document.getElementById('chunkChips');
   const previewTextarea = document.getElementById('previewTextarea');
   const downloadBtn = document.getElementById('downloadBtn');
+  const shareBtn = document.getElementById('shareBtn');
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
@@ -10508,6 +10510,18 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
       a.download = fileName;
       a.click();
     };
+
+    const file = new File([bytes], fileName, { type: 'application/octet-stream' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      shareBtn.style.display = 'block';
+      shareBtn.onclick = async () => {
+        try {
+          await navigator.share({ files: [file], title: fileName });
+        } catch (e) {
+          // 사용자가 공유를 취소한 경우 등은 무시
+        }
+      };
+    }
   }
 </script>
 
