@@ -254,6 +254,13 @@
       background-color: #ccc;
       cursor: not-allowed;
     }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--text-sub);
+      border: 1px solid var(--border-color);
+      margin-top: 8px;
+    }
   </style>
 </head>
 <body>
@@ -308,6 +315,7 @@
 
     <!-- 4. 가변 파일명이 적용된 다운로드 버튼 -->
     <button class="btn" id="downloadBtn" disabled>다운로드 대기 중</button>
+    <button class="btn btn-secondary" id="resetBtn" type="button">초기화</button>
   </div>
 </div>
 
@@ -10429,6 +10437,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
   const chunkChips = document.getElementById('chunkChips');
   const previewTextarea = document.getElementById('previewTextarea');
   const downloadBtn = document.getElementById('downloadBtn');
+  const resetBtn = document.getElementById('resetBtn');
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
@@ -10559,6 +10568,22 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
       a.click();
     };
   }
+
+  function resetState() {
+    filesInProgress.clear();
+    activeFileName = null;
+    targetFileName.textContent = '-';
+    progressLabel.textContent = '수신 진행률 (0 / 0)';
+    progressPercent.textContent = '0%';
+    progressFill.style.width = '0%';
+    chunkChips.innerHTML = '';
+    previewTextarea.value = '';
+    downloadBtn.disabled = true;
+    downloadBtn.textContent = '다운로드 대기 중';
+    downloadBtn.onclick = null;
+  }
+
+  resetBtn.addEventListener('click', resetState);
 </script>
 
 </body>
