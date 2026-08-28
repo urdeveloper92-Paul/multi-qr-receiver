@@ -53,6 +53,27 @@
       text-align: center;
     }
 
+    .inapp-banner {
+      display: none;
+      background-color: #fff3cd;
+      color: #856404;
+      padding: 10px 14px;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .inapp-banner button {
+      margin-top: 8px;
+      padding: 8px;
+      font-size: 12px;
+      width: 100%;
+      background-color: #856404;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
     /* 카메라 스캔 영역 */
     .scanner-section {
       position: relative;
@@ -233,6 +254,12 @@
 <div class="app-container">
   <div class="app-header">
     Multi-QR Receiver & Decoder
+  </div>
+
+  <div class="inapp-banner" id="inappBanner">
+    ⚠️ 카카오톡 등 인앱 브라우저에서는 다운로드/공유가 차단됩니다.<br>
+    우측 상단 메뉴에서 <b>"다른 브라우저로 열기"</b>를 선택해주세요.
+    <button id="copyLinkBtn" type="button">이 페이지 링크 복사하기</button>
   </div>
 
   <!-- 1. 스캔 영역 -->
@@ -10403,6 +10430,19 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
   const filesInProgress = new Map(); // fileName -> { total, parts: Map(index -> base64Data) }
   let activeFileName = null;
 
+  // 카카오톡/인스타그램/페이스북 등 인앱 브라우저는 파일 다운로드·공유를 자체적으로 차단함
+  if (/KAKAOTALK|Instagram|FBAN|FBAV|Line\//i.test(navigator.userAgent)) {
+    document.getElementById('inappBanner').style.display = 'block';
+    document.getElementById('copyLinkBtn').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(location.href);
+        alert('링크가 복사되었습니다. Safari/Chrome에 붙여넣어 열어주세요.');
+      } catch (e) {
+        prompt('아래 링크를 복사해서 Safari/Chrome에 붙여넣어 열어주세요.', location.href);
+      }
+    });
+  }
+
   startBtn.addEventListener('click', async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
@@ -10502,14 +10542,16 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
       previewTextarea.value = '(바이너리 파일 - 텍스트 미리보기 불가, 다운로드는 가능합니다)';
     }
 
-    downloadBtn.disabled = false;
-    downloadBtn.textContent = `${fileName} 다운로드`;
-    downloadBtn.onclick = () => {
+    const triggerDownload = () => {
       const a = document.createElement('a');
       a.href = url;
       a.download = fileName;
       a.click();
     };
+
+    downloadBtn.disabled = false;
+    downloadBtn.textContent = `${fileName} 다운로드`;
+    downloadBtn.onclick = triggerDownload;
 
     const file = new File([bytes], fileName, { type: 'application/octet-stream' });
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -10518,9 +10560,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
         try {
           await navigator.share({ files: [file], title: fileName });
         } catch (e) {
-          if (e.name !== 'AbortError') {
-            alert('공유에 실패했습니다: ' + e.message + '\n다운로드 버튼을 이용해주세요.');
-          }
+          if (e.name !== 'AbortError') triggerDownload();
         }
       };
     }
