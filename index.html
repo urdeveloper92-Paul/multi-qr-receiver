@@ -10540,12 +10540,15 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
       previewTextarea.value = '(바이너리 파일 - 텍스트 미리보기 불가, 다운로드는 가능합니다)';
     }
 
+    // 모바일 브라우저가 .js/.jsp 등을 "위험한 파일"로 분류해 다운로드를 막는 걸 피하려고 항상 .txt로 저장
+    const downloadName = /\.txt$/i.test(fileName) ? fileName : `${fileName}.txt`;
+
     downloadBtn.disabled = false;
-    downloadBtn.textContent = `${fileName} 다운로드`;
+    downloadBtn.textContent = `${downloadName} 다운로드`;
     downloadBtn.onclick = () => {
       const a = document.createElement('a');
       a.href = url;
-      a.download = fileName;
+      a.download = downloadName;
       a.click();
     };
   }
