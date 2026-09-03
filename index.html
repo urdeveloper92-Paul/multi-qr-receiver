@@ -271,7 +271,7 @@
   </div>
 
   <div class="inapp-banner" id="inappBanner">
-    ⚠️ 카카오톡 등 인앱 브라우저에서는 다운로드/공유가 차단됩니다.<br>
+    ⚠️ 카카오톡 등 인앱 브라우저에서는 다운로드/공유/클립보드 복사가 차단됩니다.<br>
     우측 상단 메뉴에서 <b>"다른 브라우저로 열기"</b>를 선택해주세요.
     <button id="copyLinkBtn" type="button">이 페이지 링크 복사하기</button>
   </div>
@@ -315,6 +315,7 @@
 
     <!-- 4. 가변 파일명이 적용된 다운로드 버튼 -->
     <button class="btn" id="downloadBtn" disabled>다운로드 대기 중</button>
+    <button class="btn" id="copyBtn" disabled>복사 대기 중</button>
     <button class="btn btn-secondary" id="resetBtn" type="button">초기화</button>
   </div>
 </div>
@@ -10437,6 +10438,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
   const chunkChips = document.getElementById('chunkChips');
   const previewTextarea = document.getElementById('previewTextarea');
   const downloadBtn = document.getElementById('downloadBtn');
+  const copyBtn = document.getElementById('copyBtn');
   const resetBtn = document.getElementById('resetBtn');
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -10550,8 +10552,10 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
     const blob = new Blob([bytes], { type: 'application/octet-stream' });
     const url = URL.createObjectURL(blob);
 
+    let decodedText = null;
     try {
-      previewTextarea.value = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+      decodedText = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+      previewTextarea.value = decodedText;
     } catch (e) {
       previewTextarea.value = '(바이너리 파일 - 텍스트 미리보기 불가, 다운로드는 가능합니다)';
     }
@@ -10567,6 +10571,24 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
       a.download = downloadName;
       a.click();
     };
+
+    if (decodedText !== null) {
+      copyBtn.disabled = false;
+      copyBtn.textContent = '📋 클립보드에 복사';
+      copyBtn.onclick = () => copyToClipboard(decodedText);
+    }
+  }
+
+  async function copyToClipboard(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (e) {
+      previewTextarea.select();
+      document.execCommand('copy');
+    }
+    const original = copyBtn.textContent;
+    copyBtn.textContent = '✅ 복사됨';
+    setTimeout(() => { copyBtn.textContent = original; }, 1500);
   }
 
   function resetState() {
