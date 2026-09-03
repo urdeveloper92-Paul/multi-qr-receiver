@@ -261,6 +261,18 @@
       border: 1px solid var(--border-color);
       margin-top: 8px;
     }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-row .btn {
+      width: auto;
+      flex: 1;
+      padding: 12px 4px;
+      font-size: 12px;
+    }
   </style>
 </head>
 <body>
@@ -314,8 +326,10 @@
     </div>
 
     <!-- 4. 가변 파일명이 적용된 다운로드 버튼 -->
-    <button class="btn" id="downloadBtn" disabled>다운로드 대기 중</button>
-    <button class="btn" id="copyBtn" disabled>복사 대기 중</button>
+    <div class="btn-row">
+      <button class="btn" id="downloadBtn" disabled>다운로드 대기 중</button>
+      <button class="btn" id="copyBtn" disabled>복사 대기 중</button>
+    </div>
     <button class="btn btn-secondary" id="resetBtn" type="button">초기화</button>
   </div>
 </div>
