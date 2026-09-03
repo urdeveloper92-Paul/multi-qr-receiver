@@ -10473,9 +10473,12 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
     });
   }
 
-  startBtn.addEventListener('click', async () => {
+  let currentStream = null;
+
+  async function startCamera() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      currentStream = stream;
       video.srcObject = stream;
       await video.play();
       startBtn.style.display = 'none';
@@ -10485,6 +10488,24 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
     } catch (err) {
       alert('카메라를 시작할 수 없습니다: ' + err.message);
     }
+  }
+
+  startBtn.addEventListener('click', startCamera);
+
+  // 앱을 백그라운드로 보냈다 돌아오면(iOS Safari 등) 카메라 스트림 자체가 끊기는 경우가 있다.
+  // requestAnimationFrame은 알아서 재개되지만, 끊긴 스트림은 다시 잡아줘야 스캔이 이어진다.
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState !== 'visible' || !currentStream) return;
+    const track = currentStream.getVideoTracks()[0];
+    if (track && track.readyState === 'live') {
+      try {
+        await video.play();
+        return;
+      } catch (e) {
+        // play() 실패 — 아래에서 스트림을 새로 잡는다
+      }
+    }
+    startCamera();
   });
 
   function tick() {
